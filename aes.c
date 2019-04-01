@@ -170,6 +170,32 @@ unsigned char rcon[11] =
     0x40000000, 0x80000000, 0x1b000000, 0x36000000
 };
 
+unsigned char * g (unsigned char wInput[ROUNDS], int counter)
+{
+    unsigned char * wReady = malloc(ROUNDS);
+    unsigned char temp[ROUNDS] = "";
+    unsigned char a = wInput[0];
+    int i=0;
+    for(i =0;i<3; i++)
+    {
+        temp[i+ROUNDS-(2*2)] = wInput[(i+1)];
+    }
+    temp[3] = a;
+
+    for (i =0; i<ROUNDS;i++)
+        temp[i+ROUNDS-(2*2)] = s[temp[i]];
+
+    unsigned char nul=0x00;
+    int auxCounter=counter;
+    unsigned char second[ROUNDS] = "";
+    second[1] = second[2] = second[3] = nul;
+    second[0] = rcon[auxCounter];
+
+    for (int i=0;i<ROUNDS;i++)
+    wReady[i+ROUNDS-(2*2)] = temp[i+ROUNDS-(2*2)] ^ second[i+ROUNDS-(2*2)];
+    return wReady;
+}
+
 unsigned char * keyExpansion(unsigned char key[16])
 {
 
