@@ -264,6 +264,46 @@ unsigned char * keyExpansion(unsigned char key[16])
     // printf("expanded key : %d\n",strlen(expandedKey));
     return expandedKey;
 }
+
+void mixColumns(unsigned char * plainText)
+{
+    int size=ROUNDS*4;
+    unsigned char *auxtemp = malloc(size);
+
+    for (int i = 0; i < ROUNDS; ++i)
+    {
+        auxtemp[(ROUNDS*i)+0] = (unsigned char) (mul2[plainText[(ROUNDS*i)+0]] ^ mul_3[plainText[(ROUNDS*i)+1]] ^ plainText[(ROUNDS*i)+2] ^ plainText[(ROUNDS*i)+3]);
+        auxtemp[(ROUNDS*i)+1] = (unsigned char) (plainText[(ROUNDS*i)+0] ^ mul2[plainText[(ROUNDS*i)+1]] ^ mul_3[plainText[(ROUNDS*i)+2]] ^ plainText[(ROUNDS*i)+3]);
+        auxtemp[(ROUNDS*i)+2] = (unsigned char) (plainText[(ROUNDS*i)+0] ^ plainText[(ROUNDS*i)+1] ^ mul2[plainText[(ROUNDS*i)+2]] ^ mul_3[plainText[(ROUNDS*i)+3]]);
+        auxtemp[(ROUNDS*i)+3] = (unsigned char) (mul_3[plainText[(ROUNDS*i)+0]] ^ plainText[(ROUNDS*i)+1] ^ plainText[(ROUNDS*i)+2] ^ mul2[plainText[(ROUNDS*i)+3]]);
+    }
+
+    for (int i = 0; i < ROUNDS*4; ++i)
+    {
+        plainText[i] = auxtemp[i];
+    }
+    free(auxtemp);
+}
+
+void inverseMixedColumn (unsigned char * plainText)
+{
+    int size=ROUNDS*4+2;
+    unsigned char *auxtemp = malloc(size);
+
+    for (int i = 0; i < ROUNDS; ++i)
+    {
+        auxtemp[(ROUNDS*i)+0] = (unsigned char) (mul_14[plainText[(ROUNDS*i)+0]] ^ mul_11[plainText[(ROUNDS*i)+1]] ^ mul_13[plainText[(ROUNDS*i)+2]] ^ mul_9[plainText[(ROUNDS*i)+3]]);
+        auxtemp[(ROUNDS*i)+1] = (unsigned char) (mul_9[plainText[(ROUNDS*i)+0]] ^ mul_14[plainText[(ROUNDS*i)+1]] ^ mul_11[plainText[(ROUNDS*i)+2]] ^ mul_13[plainText[(ROUNDS*i)+3]]);
+        auxtemp[(ROUNDS*i)+2] = (unsigned char) (mul_13[plainText[(ROUNDS*i)+0]] ^ mul_9[plainText[(ROUNDS*i)+1]] ^ mul_14[plainText[(ROUNDS*i)+2]] ^ mul_11[plainText[(ROUNDS*i)+3]]);
+        auxtemp[(ROUNDS*i)+3] = (unsigned char) (mul_11[plainText[(ROUNDS*i)+0]] ^ mul_13[plainText[(ROUNDS*i)+1]] ^ mul_9[plainText[(ROUNDS*i)+2]] ^ mul_14[plainText[(ROUNDS*i)+3]]);
+    }
+    for (int i = 0; i < ROUNDS*4; ++i)
+    {
+        plainText[i] = auxtemp[i];
+    }
+    free(auxtemp);
+}
+
 int main(){
     //the current code is for 16 byte plaintext and 16 byte key, the code will be further improved upon by adding support for 16*n byte plaintexts as well.
     char *plaintext="this aint a game";
