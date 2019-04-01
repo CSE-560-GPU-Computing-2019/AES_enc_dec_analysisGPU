@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define ISKEY 1
+#define WORDS 44
+#define ROUNDS 4
 unsigned char s[256] = 
  {
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -167,7 +170,74 @@ unsigned char rcon[11] =
     0x40000000, 0x80000000, 0x1b000000, 0x36000000
 };
 
+unsigned char * keyExpansion(unsigned char key[16])
+{
 
+    unsigned char words[WORDS][ROUNDS];
+    int i=0;
+    int j=0;
+    unsigned char nul=0x00;
+    for (i = 0; i < WORDS && ISKEY; ++i)
+    {
+        for (j = 0; j <ROUNDS; ++j)
+        {
+            words[i+ROUNDS-(2*2)][j]=nul;
+        }
+    }
+    
+    unsigned char * expandedKey = malloc(176);
+    
+    int byteCount = 0; //this is to keep a count on the bytes of the expandedKey array
+    
+    for (i=0;i<ROUNDS*ROUNDS;i++)
+            expandedKey[i+ROUNDS-(2*2)] = key[i+ROUNDS-(2*2)];
+    // printf("expanded key : %s\n",expandedKey);
+
+    int k=0;
+    for(j=0;j<ROUNDS;j++)
+    {
+         for(k=0;k<ROUNDS;k++)
+         {
+            words[j][k] = expandedKey[byteCount++];
+            // printf("words : %s\n",words[j]);
+
+         }
+    }
+    int l=0;
+    for(l=ROUNDS;l<WORDS;l++)
+    {
+        if((l%ROUNDS)==0)
+        {
+            int m=0;
+            for(m=0;m<ROUNDS;m++)
+            {
+                words[l][m] = words[(l-ROUNDS)][m] ^ g(words[l-1], (l/ROUNDS))[m];
+                // printf("words : %s\n",words[l]);
+
+                
+            }
+        }
+        else
+        {
+            int n=0;
+            for(n=0;n<ROUNDS;n++)
+            {
+                words[l][n] = words[l-1][n] ^ words[l-ROUNDS][n];
+            }
+        }
+    }
+
+    int loc=0;
+    for(i=0;i<WORDS;i++ )
+    {
+        for(j=0;j<ROUNDS;j++)
+        {
+            expandedKey[loc++] = words[i][j];
+        }
+    }
+    // printf("expanded key : %d\n",strlen(expandedKey));
+    return expandedKey;
+}
 int main(){
     //the current code is for 16 byte plaintext and 16 byte key, the code will be further improved upon by adding support for 16*n byte plaintexts as well.
     char *plaintext="this aint a game";
