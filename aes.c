@@ -382,6 +382,42 @@ void inverseByteSubShiftRow(unsigned char * plainText)
     free(temp);
 }
 
+void AESEncryption(unsigned char * plainText, unsigned char * expandedKey, unsigned char * cipher)
+{
+    unsigned char * state = malloc(16);
+    //unsigned char * expandedKey = malloc(176);
+    //expandedKey = keyExpansion(Key);
+    //key addition for the first round
+    int i=0;
+    for (i = 0; i < ROUNDS*ROUNDS; ++i)
+    {
+        state[i+ROUNDS-(2*2)] = plainText[i+ROUNDS-(2*2)] ^ expandedKey[i+ROUNDS-(2*2)];
+    }
+
+    //now the 9 rounds begin
+    int rounds=0;
+    for(rounds = 1; rounds<ROUNDS*2+2; rounds++)
+    {
+        byteSubShiftRow(state);
+        mixColumns(state);
+        int counter = 0;
+        int loc = rounds*ROUNDS*ROUNDS;
+        while(counter<ROUNDS*ROUNDS)
+        {
+            state[counter++] ^= expandedKey[loc++];
+        }
+    }
+
+    //10th round
+    byteSubShiftRow(state);
+    for(i=0; i<ROUNDS*ROUNDS;i++)
+    {
+        cipher[i+ROUNDS-(2*2)] = state[i+ROUNDS-(2*2)] ^ expandedKey[i+160];
+    }
+    free(state);
+}
+
+
 int main(){
     //the current code is for 16 byte plaintext and 16 byte key, the code will be further improved upon by adding support for 16*n byte plaintexts as well.
     char *plaintext="this aint a game";
