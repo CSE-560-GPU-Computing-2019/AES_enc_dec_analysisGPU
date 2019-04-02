@@ -304,6 +304,55 @@ void inverseMixedColumn (unsigned char * plainText)
     free(auxtemp);
 }
 
+void byteSubShiftRow(unsigned char * state)
+{
+
+    unsigned char tmp[ROUNDS*ROUNDS];
+
+    int i=0;
+    for(i=0;i<4;i++){
+        tmp[i]=s[state[i*5]];
+    }
+    // tmp[0] = s[state[0]];
+    // tmp[1] = s[state[5]];
+    // tmp[2] = s[state[10]];
+    // tmp[3] = s[state[15]];
+    unsigned char ha=s[state[4]];
+    tmp[4] = ha;
+    ha=s[state[9]];
+    tmp[5] = ha;
+    ha=s[state[14]];
+    tmp[6] = ha;
+    ha=s[state[3]];
+    tmp[7] = ha;
+
+    ha=s[state[8]];
+    tmp[8] = ha;
+    ha=s[state[13]];
+    tmp[9] = ha;
+    ha=s[state[2]];
+    tmp[10] =  ha;
+    ha=s[state[7]];
+    tmp[11] =  ha;
+
+    ha=s[state[12]];
+    tmp[12] =  ha;
+    ha=s[state[1]];
+    tmp[13] =  ha;
+    ha=s[state[6]];
+    tmp[14] =  ha;
+    ha=s[state[11]];
+    tmp[15] =  ha;
+
+
+
+    for(int i=0;i<ROUNDS*ROUNDS;i++)
+    {
+        ha=tmp[i];
+        state[i] = ha;
+    }
+}
+
 int main(){
     //the current code is for 16 byte plaintext and 16 byte key, the code will be further improved upon by adding support for 16*n byte plaintexts as well.
     char *plaintext="this aint a game";
