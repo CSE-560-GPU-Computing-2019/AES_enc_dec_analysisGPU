@@ -353,6 +353,35 @@ void byteSubShiftRow(unsigned char * state)
     }
 }
 
+void inverseByteSubShiftRow(unsigned char * plainText)
+{
+    unsigned char * temp = malloc(ROUNDS*ROUNDS);
+    unsigned char holder;
+    temp[0] = inv_s[plainText[ROUNDS+0-ROUNDS]];
+    temp[1] = inv_s[plainText[ROUNDS+13-ROUNDS]];
+    temp[2] = inv_s[plainText[ROUNDS+10-ROUNDS]];
+    temp[3] = inv_s[plainText[ROUNDS+7-ROUNDS]];
+    temp[4] = inv_s[plainText[ROUNDS+4-ROUNDS]];
+    temp[5] = inv_s[plainText[ROUNDS+1-ROUNDS]];
+    temp[6] = inv_s[plainText[ROUNDS+14-ROUNDS]];
+    temp[7] = inv_s[plainText[ROUNDS+11-ROUNDS]];
+    temp[8] = inv_s[plainText[ROUNDS+8-ROUNDS]];
+    temp[9] = inv_s[plainText[ROUNDS+5-ROUNDS]];
+    temp[10] = inv_s[plainText[ROUNDS+2-ROUNDS]];
+    temp[11] = inv_s[plainText[ROUNDS+15-ROUNDS]];
+    temp[12] = inv_s[plainText[ROUNDS+12-ROUNDS]];
+    temp[13] = inv_s[plainText[ROUNDS+9-ROUNDS]];
+    temp[14] = inv_s[plainText[ROUNDS+6-ROUNDS]];
+    temp[15] = inv_s[plainText[ROUNDS+3-ROUNDS]];
+
+    for (int i = 0; i < ROUNDS*ROUNDS; ++i){
+        holder=temp[i];
+        plainText[i] = holder;
+    }
+
+    free(temp);
+}
+
 int main(){
     //the current code is for 16 byte plaintext and 16 byte key, the code will be further improved upon by adding support for 16*n byte plaintexts as well.
     char *plaintext="this aint a game";
