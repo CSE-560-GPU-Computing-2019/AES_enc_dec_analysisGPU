@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <time.h>
 #define ISKEY 1
 #define WORDS 44
 #define ROUNDS 4
@@ -416,7 +416,36 @@ void AESEncryption(unsigned char * plainText, unsigned char * expandedKey, unsig
     }
     free(state);
 }
+void AESDecryption(unsigned char * cipher, unsigned char * expandedKey, unsigned char * plainText)
+{
+    int size=ROUNDS*ROUNDS;
+    unsigned char * state = malloc(size);
+    //key whitening
+    int i=0;
+    for (i = 0; i < size; ++i)
+        state[i+ROUNDS-(2*2)] = cipher[i+ROUNDS-(2*2)] ^ expandedKey[160+i+ROUNDS-(2*2)];
 
+    // 9 rounds of decryption
+    int rounds=0;
+    for (rounds = 9; rounds >0 ; rounds--)
+    {
+        inverseByteSubShiftRow(state);
+        int counter = 0;
+        int loc = size*rounds;
+        while(counter<size)
+        {
+            state[counter++] ^= expandedKey[loc++];
+        }
+        inverseMixedColumn(state);
+    }
+
+    //final 10th round of decryption
+    inverseByteSubShiftRow(state);
+    for(int i =0; i<size; i++)
+        plainText[i+ROUNDS-(2*2)] = state[i+ROUNDS-(2*2)] ^ expandedKey[i+ROUNDS-(2*2)];
+
+    free(state);
+}
 
 int main(){
     //the current code is for 16 byte plaintext and 16 byte key, the code will be further improved upon by adding support for 16*n byte plaintexts as well.
@@ -425,7 +454,32 @@ int main(){
     char *expandedkey=keyExpansion((char*)key);
     char cipher[strlen(plaintext)+50];
     char plain[strlen(plaintext)+50];
-    
+    const clock_t begin_time = clock();
+    for(long i=0;i<100000;i++){
+        AESEncryption(plaintext,expandedkey,cipher);
+    }
+    // int ha=0;
+    // int j=0,k=0;
+    // for(j=0;j<6000;j++){
+    //     for(k=0;k<6000;k++){
+    //         ha++;
+    //     }
+    // }
+	float runTime = (float)( clock() - begin_time ) /  CLOCKS_PER_SEC;
+	printf("Time for matching keywords (CPU): %fs\n\n", runTime);
+    printf("cipher is: %s\n",cipher);
+    AESDecryption(cipher, expandedkey,  plain);
+    printf("plain is: %s\n",plain);
+
+    // clock_t t; 
+    // t = clock(); 
+    // fun(); 
+    // t = clock() - t; 
+    // double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
+  
+    // printf("fun() took %f seconds to execute \n", time_taken); 
+
+    // printf("%s\n%s\n%s",plaintext, key, (char*)expandedkey);
     
     return 0;
 
