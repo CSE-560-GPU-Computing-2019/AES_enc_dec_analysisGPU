@@ -746,9 +746,9 @@ for(int max=130; max<140000000; max*=10){
         cudaEventElapsedTime(&time, start, stop);
 
         // printf("GPU cipher is %s\n",cipher);
-        printf("GPU Decrypted plain is %s\n",GPU_Decrypted_plain);
+        // printf("GPU Decrypted plain is %s\n",GPU_Decrypted_plain);
         // printf("Normal  plain text  is %s\n",plaintext);
-        break;
+        // break;
         printf("Time for GPU: %fms\n", time);
         printf("Time for Kernel: %fms\n", timeKernel);
         printf("Speed Up Kernel (Decryption):  %f\n",runTime/timeKernel);
