@@ -1,3 +1,8 @@
+//GPU AES Encryption and Decryption
+/*
+Aamir Tufail Ahmad - 2016001
+Arnav Kumar - 2016017
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h> 
@@ -150,7 +155,7 @@ __global__ void GPU_AESDecryption(unsigned char * d_plainText, unsigned char * d
         // 9 rounds of decryption
         for (int rounds = 9; rounds >0 ; rounds--)
         {
-            GPU_inverseByteSubShiftRow(d_plainText,s_s_inv);
+            GPU_inverseByteSubShiftRow(d_state,s_s_inv);
             int counter = 0;
             int loc = 16*rounds;
             while(counter<16)
@@ -159,13 +164,13 @@ __global__ void GPU_AESDecryption(unsigned char * d_plainText, unsigned char * d
                 loc++;
                 counter++;
             }
-            GPU_inverseMixedColumn(d_plainText,s_mul_14,s_mul_9,s_mul_13,s_mul_11);
+            GPU_inverseMixedColumn(d_state,s_mul_14,s_mul_9,s_mul_13,s_mul_11);
         }
 
         //final 10th round of decryption
-        GPU_inverseByteSubShiftRow(d_plainText,s_s_inv);
+        GPU_inverseByteSubShiftRow(d_state,s_s_inv);
         for(int i =0; i<16; i++)
-            d_plainText[i] = d_state[i] ^ s_expandedKey[160+i];
+            d_plainText[i] = d_state[i] ^ s_expandedKey[i];
     }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
