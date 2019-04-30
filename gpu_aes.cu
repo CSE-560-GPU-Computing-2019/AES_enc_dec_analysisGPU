@@ -426,7 +426,7 @@ unsigned char * keyExpansion(unsigned char key[16])
     }
 
     int loc=0;
-    for(int i=0;i<44;i++ )
+    for(int i=0;i<44;i++)
     {
         for(int j=0;j<4;j++)
         {
@@ -630,7 +630,7 @@ for(int max=130; max<140000000; max*=10){
     // }
 	float runTime = (float)( clock() - begin_time ) /  1000;
 	printf("Time for CPU: %fms\n", runTime);
-    printf("cipher is %s\n",cipher);
+    // printf("cipher is %s\n",cipher);
     AESDecryption(cipher, expandedkey,  plain);
     
     unsigned char GPU_Decrypted_plain[len];
@@ -696,32 +696,65 @@ for(int max=130; max<140000000; max*=10){
         dim3 dimGrid(ceil((float) len/256),1,1); 
         dim3 dimBlock(256,1,1);
 
+        //~~~~~~~~~~~ENCRYPTION~~~~~~~~~~~~~~
         cudaEventCreate(&kernel1);
         cudaEventCreate(&kernel2);
         cudaEventRecord(kernel1, 0);
 
         GPU_AESEncryption<<<dimGrid,dimBlock>>>(d_plainText,d_expandedKey,d_cipher,d_s,d_mul2,d_mul_3,len);  
-        GPU_AESDecryption<<<dimGrid,dimBlock>>>(d_plainText,d_expandedKey,d_cipher,d_inv_s,d_mul_14,d_mul_9,d_mul_13,d_mul_11,len);  
+        // GPU_AESDecryption<<<dimGrid,dimBlock>>>(d_plainText,d_expandedKey,d_cipher,d_inv_s,d_mul_14,d_mul_9,d_mul_13,d_mul_11,len);  
             
         cudaEventRecord(kernel2, 0);
         cudaEventSynchronize(kernel2);
         cudaEventElapsedTime(&timeKernel, kernel1, kernel2);
 
         cudaMemcpy(cipher, d_cipher , len*sizeof(char) , cudaMemcpyDeviceToHost);
+        // cudaMemcpy(GPU_Decrypted_plain, d_plainText , len*sizeof(char) , cudaMemcpyDeviceToHost);
+
+        cudaEventRecord(stop, 0);
+        cudaEventSynchronize(stop);
+        cudaEventElapsedTime(&time, start, stop);
+
+        // printf("GPU cipher is %s\n",cipher);
+        // printf("GPU Decrypted plain is %s\n",GPU_Decrypted_plain);
+        // printf("Normal  plain text  is %s\n",plaintext);
+        // break;
+        printf("Time for GPU: %fms\n", time);
+        printf("Time for Kernel: %fms\n", timeKernel);
+        printf("Speed Up Kernel (Encryption):  %f\n",runTime/timeKernel);
+        printf("Speed Up Total  :  %f\n\n",runTime/time);
+
+        cudaMemcpy(d_cipher, cipher , len*sizeof(char) , cudaMemcpyHostToDevice);        
+
+        //~~~~~~~~~~~DECRYPTION~~~~~~~~~~~~~~
+        cudaEventCreate(&kernel1);
+        cudaEventCreate(&kernel2);
+        cudaEventRecord(kernel1, 0);
+
+        // GPU_AESEncryption<<<dimGrid,dimBlock>>>(d_plainText,d_expandedKey,d_cipher,d_s,d_mul2,d_mul_3,len);  
+        GPU_AESDecryption<<<dimGrid,dimBlock>>>(d_plainText,d_expandedKey,d_cipher,d_inv_s,d_mul_14,d_mul_9,d_mul_13,d_mul_11,len);  
+            
+        cudaEventRecord(kernel2, 0);
+        cudaEventSynchronize(kernel2);
+        cudaEventElapsedTime(&timeKernel, kernel1, kernel2);
+
+        // cudaMemcpy(cipher, d_cipher , len*sizeof(char) , cudaMemcpyDeviceToHost);
         cudaMemcpy(GPU_Decrypted_plain, d_plainText , len*sizeof(char) , cudaMemcpyDeviceToHost);
 
         cudaEventRecord(stop, 0);
         cudaEventSynchronize(stop);
         cudaEventElapsedTime(&time, start, stop);
 
-        printf("GPU cipher is %s\n",cipher);
+        // printf("GPU cipher is %s\n",cipher);
         printf("GPU Decrypted plain is %s\n",GPU_Decrypted_plain);
-        printf("Normal  plain text  is %s\n",plaintext);
+        // printf("Normal  plain text  is %s\n",plaintext);
         break;
         printf("Time for GPU: %fms\n", time);
         printf("Time for Kernel: %fms\n", timeKernel);
-        printf("Speed Up Kernel :  %f\n",runTime/timeKernel);
+        printf("Speed Up Kernel (Decryption):  %f\n",runTime/timeKernel);
         printf("Speed Up Total  :  %f\n\n",runTime/time);
+
+
 
 
         cudaFree(d_s);
