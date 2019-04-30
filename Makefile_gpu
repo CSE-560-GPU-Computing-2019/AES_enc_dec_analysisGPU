@@ -1,0 +1,3 @@
+all:
+        nvcc -w -std=c++11 gpu_aes.cu
+        ./a.out
